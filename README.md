@@ -1,4 +1,4 @@
-# TS Manual Import for Neovim
+# ts-manual-import.nvim
 
 Add TS/JS import statement manually in luasnip callbacks, other snippets in lua, any modules, keymaps.
 
@@ -11,7 +11,7 @@ Install the plugin with your preferred package manager.
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{ "dorage/TS-Manual-Import" }
+{ "dorage/ts-manual-import.nvim.git" }
 ```
 
 ## Configuration
