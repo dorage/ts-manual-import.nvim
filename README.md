@@ -2,6 +2,7 @@
 
 Add TS/JS import statement manually in luasnip callbacks, other snippets in lua, any modules, keymaps.
 
+> ! It's still working in development stage.
 <!-- TODO: import video -->
 
 ## Installation
@@ -68,7 +69,4 @@ s(
 
 It is the first made neovim plugin.
 
-<!-- TODO: add folke's github link -->
 I referenced many parts in [folke](https://github.com/folke)'s plugins.
-
-
