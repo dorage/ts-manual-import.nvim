@@ -2,9 +2,7 @@
 
 Add TS/JS import statement manually in luasnip callbacks, other snippets in lua, any modules, keymaps.
 
->
-> ! It's still working in development stage.
->
+> *! It's still working in development stage.*
 <!-- TODO: import video -->
 
 ## Installation
