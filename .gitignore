@@ -15,4 +15,3 @@ data
 test/xdg/cache/nvim/*
 test/xdg/local/share/nvim/*
 test/xdg/local/state/nvim/*
-/lua
