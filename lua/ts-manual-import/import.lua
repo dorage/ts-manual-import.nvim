@@ -175,17 +175,11 @@ local function find_ts_node(ts_path)
 
 	return cursor
 end
----------------------------------------------------------------------------------------
---
--- module interfaces
---
----------------------------------------------------------------------------------------
-
-local M = {}
 
 ---generate import statement string
 ---@param import Import
-M.gen_import_statement = function(import)
+---@return string
+local function gen_import_statement(import)
 	---comment
 	---@param source_name string
 	local source_string = function(source_name)
@@ -221,6 +215,16 @@ M.gen_import_statement = function(import)
 
 	return table.concat(import_stmt_tokens, " ")
 end
+
+---------------------------------------------------------------------------------------
+--
+-- module interfaces
+--
+---------------------------------------------------------------------------------------
+
+local M = {}
+
+M.gen_import_statement = gen_import_statement
 
 ---comment
 ---@param fn function
