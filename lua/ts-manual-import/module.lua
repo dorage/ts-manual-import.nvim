@@ -14,8 +14,8 @@ local fp = require("ts-manual-import.util")
 
 ---@class Import
 ---@field source string
----@field modules string[]
----@field default_modules string[]
+---@field modules string[]?
+---@field default string?
 
 ---@class ImportMap: Import
 ---@field node TSNode
@@ -86,7 +86,7 @@ local function get_import_statements()
   return import_statements
 end
 
----comment
+---find all import statements in the current buffer and return them in ImportMap array
 ---@return ImportMap[]
 local function get_parsed_import_statements()
   ---@type Import[]
@@ -187,7 +187,7 @@ local function gen_import_statement(import)
   end
 
   -- import module
-  if import.default_modules[#import.default_modules] == nil and import.modules[#import.modules] == nil then
+  if import.default[#import.default] == nil and import.modules[#import.modules] == nil then
     return "import" .. source_string(import.source)
   end
 
@@ -195,8 +195,8 @@ local function gen_import_statement(import)
   local import_stmt_tokens = { "import" }
 
   -- add default modules
-  if import.default_modules[#import.default_modules] ~= nil then
-    import_stmt_tokens[#import_stmt_tokens + 1] = table.concat(import.default_modules, ", ")
+  if import.default[#import.default] ~= nil then
+    import_stmt_tokens[#import_stmt_tokens + 1] = table.concat(import.default, ", ")
     -- if modules exists
     if import.modules[#import.modules] ~= nil then
       import_stmt_tokens[#import_stmt_tokens + 1] = ","
@@ -253,6 +253,10 @@ end
 ---import modules under the last import statement in the buffer
 ---@param imports Import[]
 M.add_import_statement = function(imports)
+  -- TODO:
+  -- get import statements in the current buffer
+  -- add imports into existed import statements
+
   -- local import_stmts = get_import_statements()
   local parsed_import_stmts = get_parsed_import_statements()
   -- preserve cursor position
@@ -310,7 +314,7 @@ M.add_import_statement = function(imports)
       end)
     end)
 
-    local missing_default_modules = fp.filter(import.default_modules, function(module)
+    local missing_default_modules = fp.filter(import.default, function(module)
       return not fp.some(existed_default_modules, function(existed_default_module)
         return module == existed_default_module
       end)
@@ -322,7 +326,7 @@ M.add_import_statement = function(imports)
     vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, {
       gen_import_statement({
         source = import.source,
-        default_modules = fp.combine(last_import_stmt.default_modules, missing_default_modules),
+        default_modules = fp.combine(last_import_stmt.default, missing_default_modules),
         modules = fp.combine(last_import_stmt.modules, missing_modules),
       }),
     })
