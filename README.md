@@ -108,7 +108,7 @@ require("ts-manual-import").import({
 
 ## Todo
 
-- [v] unit test
+- [x] unit test
 - [ ] Support `import type ...` statement in Typescript
 
 ## References
