@@ -252,82 +252,91 @@ M.restore_cursor = function(fn)
 end
 
 ---set new import statements in the current buffer
----@param imports Import[]
-M.set_import_statements = function(imports)
+---@param new_imports Import[]
+M.set_import_statements = function(new_imports)
   -- TODO:
   -- get import statements in the current buffer
   -- add imports into existed import statements
 
-  -- local import_stmts = get_import_statements()
-  local parsed_import_stmts = get_parsed_import_statements()
-  -- preserve cursor position
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-
-  for _, import in ipairs(imports) do
-    local matched_import_stmts = fp.filter(parsed_import_stmts, function(import_stmt)
-      return import_stmt.source == import.source
-    end)
-
-    -- if the import statement, has same source, does not exist
-    if matched_import_stmts[#matched_import_stmts] == nil then
-      local last_import_stmt = parsed_import_stmts[#parsed_import_stmts]
-      -- if there has no import statement
-      if last_import_stmt == nil then
-        local first_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)
-
-        vim.api.nvim_buf_set_lines(0, 0, 1, false, fp.combine({ gen_import_statement(import), "" }, first_line))
-        -- add below of the last import statement
-      else
-        local start_row, _, end_row = last_import_stmt.node:range()
-        local last_import_stmt_lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
-        vim.api.nvim_buf_set_lines(
-          0,
-          start_row,
-          end_row + 1,
-          false,
-          fp.combine(last_import_stmt_lines, { gen_import_statement(import), "" })
-        )
-      end
-      -- line had added
-      row = row + 1
+  for _, new_import in ipairs(new_imports) do
+    local existing_imports = get_import_map()
+    -- if import statement is empty
+    -- then add import statements in the top of the file
+    -- return
+    if existing_imports[#existing_imports] == nil then
+      local curr_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)
+      vim.api.nvim_buf_set_lines(0, 0, 1, false, { gen_import_statement(new_import), unpack(curr_line) })
       goto continue
     end
 
-    local existed_modules = fp.pipe(
-      fp.pipe_curry(fp.map, function(import_stmt)
-        return import_stmt.modules
-      end),
-      unpack,
-      fp.combine
-    )(matched_import_stmts)
-
-    local existed_default_modules = fp.pipe(
-      fp.pipe_curry(fp.map, function(import_stmt)
-        return import_stmt.default_modules
-      end),
-      unpack,
-      fp.combine
-    )(matched_import_stmts)
-
-    local missing_modules = fp.filter(import.modules, function(module)
-      return not fp.some(existed_modules, function(existed_module)
-        return module == existed_module
-      end)
+    local same_source_imports = fp.filter(existing_imports, function(existing_import)
+      return existing_import.source == new_import.source
     end)
 
-    local missing_default_modules = fp.filter(import.default, function(module)
-      return not fp.some(existed_default_modules, function(existed_default_module)
-        return module == existed_default_module
-      end)
-    end)
+    -- if import statement exists
+    -- but not overlapped sources
+    -- then add import statement below of the last import statement
+    -- return
+    if same_source_imports[#same_source_imports] == nil then
+      local last_import_stmt = existing_imports[#existing_imports]
+      local start_row, _, end_row = last_import_stmt.node:range()
+      local last_import_stmt_lines = vim.api.nvim_buf_get_lines(0, start_row, end_row + 1, false)
 
-    local last_import_stmt = matched_import_stmts[#matched_import_stmts]
+      vim.api.nvim_buf_set_lines(
+        0,
+        start_row,
+        end_row + 1,
+        false,
+        fp.combine(last_import_stmt_lines, { gen_import_statement(new_import) })
+      )
+      -- line had added
+      goto continue
+    end
+
+    -- but overlap sources
+    -- then find unique modules, and add it in the last import statement
+
+    local missing_default = nil
+
+    if new_import.default ~= nil then
+      local existing_default = fp.pipe(
+        fp.pipe_curry(fp.map, function(import_map)
+          return import_map.default_modules
+        end),
+        unpack,
+        fp.combine
+      )(same_source_imports)
+
+      if existing_default[#existing_default] == nil then
+        missing_default = new_import.default
+      end
+    end
+
+    local missing_modules = {}
+
+    if new_import.modules ~= nil and new_import.modules[#new_import.modules] ~= nil then
+      local existing_modules = fp.pipe(
+        fp.pipe_curry(fp.map, function(import_map)
+          return import_map.modules
+        end),
+        unpack,
+        fp.combine
+      )(same_source_imports)
+
+      missing_modules = fp.filter(new_import.modules, function(module)
+        return not fp.some(existing_modules, function(existing_module)
+          return module == existing_module
+        end)
+      end)
+    end
+
+    local last_import_stmt = same_source_imports[#same_source_imports]
     local start_row, _, end_row = last_import_stmt.node:range()
 
     vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, {
       gen_import_statement({
-        source = import.source,
-        default_modules = fp.combine(last_import_stmt.default, missing_default_modules),
+        source = new_import.source,
+        default_modules = missing_default ~= nil and missing_default or last_import_stmt.default,
         modules = fp.combine(last_import_stmt.modules, missing_modules),
       }),
     })
