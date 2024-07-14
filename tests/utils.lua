@@ -9,6 +9,19 @@ end
 
 local M = {}
 
+---comment
+---@generic R
+---@generic X
+---@param result R
+---@param expected X
+---@param condition fun(result:R, expected:X):boolean
+---@return unknown
+M.assert = function(result, expected, condition)
+  local v = condition(result, expected)
+  local msg = "expected: " .. vim.inspect(expected) .. ", but got: " .. vim.inspect(result)
+  return assert(v, msg)
+end
+
 ---@class AddPluginOptions
 ---@field url string
 ---@field config function
