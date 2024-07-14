@@ -6,7 +6,7 @@ local M = {}
 ---@param imports Import[]
 M.import = function(imports)
   vim.schedule(function()
-    import.restore_cursor(import.add_import_statement)(imports)
+    import.restore_cursor(import.set_import_statements)(imports)
   end)
 end
 

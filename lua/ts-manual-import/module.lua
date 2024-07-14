@@ -251,9 +251,9 @@ M.restore_cursor = function(fn)
   end
 end
 
----import modules under the last import statement in the buffer
+---set new import statements in the current buffer
 ---@param imports Import[]
-M.add_import_statement = function(imports)
+M.set_import_statements = function(imports)
   -- TODO:
   -- get import statements in the current buffer
   -- add imports into existed import statements
