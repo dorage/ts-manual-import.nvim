@@ -100,16 +100,6 @@ require("ts-manual-import").import({
 
 - There has no import statement of the source, Then it would add import statement below the last import statement in the buffer.
 
-### config
-
-
-
-### code
-
-``` typescript
-
-```
-
 - There has a import statement of the source, Then it would add modules on the import statement.
 
 - There has a import statement of the source, But module is imported already, then do nothing
