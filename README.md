@@ -2,7 +2,6 @@
 
 Add TS/JS import statement manually in luasnip callbacks, other snippets in lua, any modules, keymaps.
 
-> *! It's still working in development stage.*
 <!-- TODO: import video -->
 
 ## Installation
@@ -17,11 +16,22 @@ Install the plugin with your preferred package manager.
 
 ## Requirements
 
-tree-sitter.nvim
+[tree-sitter.nvim](https://github.com/nvim-treesitter/nvim-treesitter)
+
+``` lua
+require("nvim-treesitter.configs").setup({
+    ensure_installed = {
+        "javascript",
+        "typescript",
+        "tsx",
+    },
+    sync_install = true,
+})
+```
 
 ## Configuration
 
-It does not need to setup any extra config.
+It does not need to setup.
 
 ## Usage
 
@@ -40,7 +50,6 @@ s(
 	{
 		callbacks = require("ts-manual-import").luasnip_callback({
 			{
-				default_modules = {},
 				modules = { "useState" },
 				source = "react",
 			},
@@ -64,9 +73,8 @@ s(
             [event.eneter]=function()
                 require("ts-manual-import").import({
                     {
-                        default_modules = {},
                         modules = { "useState" },
-                            source = "react",
+                        source = "react",
                     }
                 })
             end
@@ -81,9 +89,9 @@ s(
 
 -- default usage
 require("ts-manual-import").import({
-	{ default_modules = { "React" }, modules = {}, source = "react" },
-	{ default_modules = {}, modules = { "z" }, source = "zod" },
-	{ default_modules = {}, modules = { "useState" }, source = "react" },
+	{ defalut = "React", modules = {}, source = "react" },
+	{ modules = { "z" }, source = "zod" },
+	{ modules = { "useState" }, source = "react" },
 })
 
 ```
@@ -110,10 +118,13 @@ require("ts-manual-import").import({
 
 ## Todo
 
-- [ ] unit test
+- [v] unit test
+- [ ] Support `import type ...` statement in Typescript
 
 ## References
 
 It is the first made neovim plugin.
+
+This plugin has been constructed based on [nvim-plugin-template](https://github.com/ellisonleao/nvim-plugin-template).
 
 I referenced many parts in [folke](https://github.com/folke)'s plugins.
