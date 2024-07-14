@@ -181,39 +181,40 @@ end
 ---@return string
 local function gen_import_statement(import)
   ---comment
-  ---@param source_name string
-  local source_string = function(source_name)
-    return "'" .. source_name .. "'"
+  ---@param module_stmt string?
+  ---@return string
+  local import_stmt_wrapper = function(module_stmt)
+    if module_stmt == nil then
+      return "import " .. "'" .. import.source .. "';"
+    end
+    return "import " .. module_stmt .. " from '" .. import.source .. "';"
   end
 
-  -- import module
-  if import.default[#import.default] == nil and import.modules[#import.modules] == nil then
-    return "import" .. source_string(import.source)
+  -- to make condition easier
+  if import.modules ~= nil and import.modules[#import.modules] == nil then
+    import.modules = nil
   end
 
-  ---@type string[]
-  local import_stmt_tokens = { "import" }
+  -- return source only
+  if import.default == nil and import.modules == nil then
+    return import_stmt_wrapper()
+  end
+
+  local module_stmt = ""
 
   -- add default modules
-  if import.default[#import.default] ~= nil then
-    import_stmt_tokens[#import_stmt_tokens + 1] = table.concat(import.default, ", ")
-    -- if modules exists
-    if import.modules[#import.modules] ~= nil then
-      import_stmt_tokens[#import_stmt_tokens + 1] = ","
+  if import.default ~= nil then
+    module_stmt = module_stmt .. import.default
+
+    if import.modules == nil then
+      return import_stmt_wrapper(module_stmt)
     end
+
+    module_stmt = module_stmt .. ", "
   end
 
-  -- add modules
-  if import.modules[#import.modules] ~= nil then
-    import_stmt_tokens[#import_stmt_tokens + 1] = "{"
-    import_stmt_tokens[#import_stmt_tokens + 1] = table.concat(import.modules, ", ")
-    import_stmt_tokens[#import_stmt_tokens + 1] = "}"
-  end
-
-  import_stmt_tokens[#import_stmt_tokens + 1] = "from"
-  import_stmt_tokens[#import_stmt_tokens + 1] = source_string(import.source)
-
-  return table.concat(import_stmt_tokens, " ")
+  module_stmt = module_stmt .. "{ " .. table.concat(import.modules, ", ") .. " }"
+  return import_stmt_wrapper(module_stmt)
 end
 
 ---------------------------------------------------------------------------------------
