@@ -88,33 +88,32 @@ end
 
 ---find all import statements in the current buffer and return them in ImportMap array
 ---@return ImportMap[]
-local function get_parsed_import_statements()
+local function get_import_map()
   ---@type Import[]
   local import_map = {}
-  local import_statements = get_import_statements()
+  local import_stmt_nodes = get_import_statements()
 
   -- parse import statements
-  for _, import_stmt in ipairs(import_statements) do
-    local source_nodes = search_node(import_stmt, function(node)
+  for _, import_stmt_node in ipairs(import_stmt_nodes) do
+    local source_nodes = search_node(import_stmt_node, function(node)
       return node:type() == "string_fragment"
     end)
-    local module_nodes = search_node(import_stmt, function(node)
+    local module_nodes = search_node(import_stmt_node, function(node)
       return node:type() == "identifier" and node:parent():type() == "import_specifier"
     end)
-    local default_module_nodes = search_node(import_stmt, function(node)
+    local default_nodes = search_node(import_stmt_node, function(node)
       return node:type() == "identifier" and node:parent():type() == "import_clause"
     end)
 
     local source = get_text_by_range(source_nodes[1]:range())
-    local modules = fp.map(module_nodes, function(node)
-      return get_text_by_range(node:range())
-    end)
-    local default_modules = fp.map(default_module_nodes, function(node)
-      return get_text_by_range(node:range())
-    end)
+    local modules = module_nodes[#module_nodes] ~= nil
+        and fp.map(module_nodes, function(node)
+          return get_text_by_range(node:range())
+        end)
+      or nil
+    local default = default_nodes[1] ~= nil and get_text_by_range(default_nodes[1]:range()) or nil
 
-    import_map[#import_map + 1] =
-      { node = import_stmt, source = source, modules = modules, default_modules = default_modules }
+    import_map[#import_map + 1] = { node = import_stmt_node, source = source, modules = modules, default = default }
   end
 
   return import_map
@@ -226,6 +225,7 @@ end
 local M = {}
 
 M.gen_import_statement = gen_import_statement
+M.get_import_map = get_import_map
 
 ---comment
 ---@param fn function
