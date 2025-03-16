@@ -205,7 +205,8 @@ local function gen_import_statement(import)
   if import.default ~= nil then
     module_stmt = module_stmt .. import.default
 
-    if import.modules == nil then
+    -- if there has no named modules, return statement with default module only
+    if import.modules == nil or #import.modules == 0 then
       return import_stmt_wrapper(module_stmt)
     end
 
@@ -336,7 +337,7 @@ M.set_import_statements = function(new_imports)
     vim.api.nvim_buf_set_lines(0, start_row, end_row + 1, false, {
       gen_import_statement({
         source = new_import.source,
-        default_modules = missing_default ~= nil and missing_default or last_import_stmt.default,
+        default = missing_default ~= nil and missing_default or last_import_stmt.default,
         modules = fp.combine(last_import_stmt.modules, missing_modules),
       }),
     })

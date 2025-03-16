@@ -142,4 +142,25 @@ describe("add import statements", function()
       end)
     end)
   end)
+
+  it("in the file, that have named module and default module in a import statements", function()
+    vim.cmd("edit tests/ts/default-with-named.ts")
+    module.set_import_statements({
+      {
+        source = "default-with-named",
+        modules = { "named2" },
+      },
+    })
+
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local expected = {
+      "import Default, { named1, named2 } from 'default-with-named';",
+    }
+
+    test_utils.assert(lines, expected, function(result, expected)
+      return fp.every(result, function(value, index, array)
+        return value == expected[index]
+      end)
+    end)
+  end)
 end)
